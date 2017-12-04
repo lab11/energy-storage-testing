@@ -1,45 +1,59 @@
---Initialize SMU
 
-reset()
-errorqueue.clear()
-status.reset()
+function measureCapacitor(current, voltage, filename)
 
-smua.nvbuffer1.clear()
-smua.nvbuffer1.appendmode = 1
-smua.nvbuffer1.collecttimestamps = 1
-smua.nvbuffer1.collectsourcevalues = 0
+    --Initialize SMU
+    reset()
+    errorqueue.clear()
+    status.reset()
+    display.screen = display.SMUA
 
-smua.nvbuffer2.clear()
-smua.nvbuffer2.appendmode = 1
-smua.nvbuffer2.collecttimestamps = 1
-smua.nvbuffer2.collectsourcevalues = 0
+    --Setup Buffers
+    smua.nvbuffer1.clear()
+    smua.nvbuffer1.appendmode = 1
+    smua.nvbuffer1.collecttimestamps = 1
+    smua.nvbuffer1.collectsourcevalues = 0
+    
+    smua.nvbuffer2.clear()
+    smua.nvbuffer2.appendmode = 1
+    smua.nvbuffer2.collecttimestamps = 1
+    smua.nvbuffer2.collectsourcevalues = 0
+    
+    smua.source.func = smua.OUTPUT_DCVOLTS
+    smua.source.levelv = 0
+    smua.source.limiti = 0.1
 
-smua.source.func = smua.OUTPUT_DCVOLTS
-smua.source.levelv = 0
-smua.source.limiti = 0.1
+    print("Zeroing capacitor voltage")
+    smua.source.output = smua.OUTPUT_ON
+    delay(2)
+    smua.source.output = smua.OUTPUT_OFF
 
-print("Zeroing capacitor voltage")
+    smua.source.func = smua.OUTPUT_DCAMPS
 
-smua.source.output = smua.OUTPUT_ON
-delay(1)
-smua.source.output = smua.OUTPUT_OFF
+    --Set the constant current voltage of the test here!
+    smua.source.leveli = current
+    smua.measure.count = 1
+    smua.measure.rangei = 1e-4
+    smua.measure.rangev = 20
 
-smua.source.func = smua.OUTPUT_DCAMPS
+    --This sets the measurement time to 1ms
+    smua.measure.nplc = 0.06
 
---Set the constant current voltage of the test here!
-smua.source.leveli = 1e-5
-smua.measure.count = 1
-smua.measure.rangei = 1e-4
-smua.measure.rangev = 20
+    print("Charging capacitor...")
+    smua.source.output = smua.OUTPUT_ON
 
-reading = 0
-smua.source.output = smua.OUTPUT_ON
--- Set this voltage to as the voltage limit
-while reading < 2
-    reading = smua.measure.iv(smua.nvbuffer1, smua.nvbuffer2)
+    repeat 
+        c, v = smua.measure.iv(smua.nvbuffer1, smua.nvbuffer2)
+    until v >= voltage
+    
+    print("Measuring absorption...")
+    smua.source.leveli = 0
+    smua.measure.count = 55000
+    smua.measure.iv(smua.nvbuffer1, smua.nvbuffer2)
+    smua.source.output = smua.OUTPUT_OFF
+
+    print("Saving data...")
+    savebuffer(smua.nvbuffer2,"csv",filename)
+    print("Done.
 end
 
-smua.measure.count = 10000
-smua.source.leveli = 0
-smua.measure.iv(smua.nvbuffer1, smua.nvbuffer2)
-smua.source.output = smua.OUTPUT_OFF
+measureCapacitor(0.00001, 2, "nichon_100uf_10ua_2v_1.csv")
