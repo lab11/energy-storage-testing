@@ -21,7 +21,7 @@ If you have information to add, papers we should cite, tests that you think are 
 or thoughts
 on the project _please_ submit a pull request or file an issue!
 
-#Primary Cell (Non-Rechargeable) Batteries
+# Primary Cell (Non-Rechargeable) Batteries
 
 We are concerned with the actual capacity and leakage of primary
 cell batteries, and how discharge currents/patterns impact these two metrics. 
@@ -32,7 +32,7 @@ The key idea is that high-pulsed discharge patterns may actually extend the
 capacities of lithium primary cells beyond rated capacity, but we encourage
 you to read the paper for more details. 
 
-#Rechargeable Batteries
+# Rechargeable Batteries
 
 We are currently performing our own testing and compiling information
 on both several types of lithium rechargeable batteries. Key metrics
@@ -45,7 +45,7 @@ Key ideas that we have learned so far, mainly from conversations with others,
 is that cell lifetime has an inverse exponential relationship to depth of
 discharge. Proper attribution/citations coming soon.
 
-#Capacitors and Super Capacitors
+# Capacitors and Super Capacitors
 
 We are currently performing our own testing and compiling information
 on electrolytic, ceramic and tantalum capacitors as well as
