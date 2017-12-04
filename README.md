@@ -63,4 +63,4 @@ More concrete testing methodology, scripts and results coming soon.
 Our group has written briefly about the differences between tantalum
 and ceramic capacitors for energy harvesting nodes in the past in
 this [paper](https://web.eecs.umich.edu/~prabal/pubs/papers/yerva12grafting.pdf),
-however we are struggling to confirm these results.
+and we are confirming these results.
