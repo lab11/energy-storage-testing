@@ -92,8 +92,13 @@ if((len(args.data) != len(args.capacitance)) or (len(args.capacitance) != len(ar
 
 t,c,v,s = parse_test(args.data[0][0],args.capacitance[0][0],args.current[0][0]);
 average, uC = calc_metrics(c,t,s)
-print(average)
-print(uC)
+print("")
+print("Average leakage current: {:0.2e}".format(average))
+print("As a percent of input current: {:0.2f}%".format(average/args.current[0][0]*100))
+print("")
+print("uC leakage during absorption: {:0.2e}".format(uC)) 
+print("As a percent of input current: {:0.2f}%".format(uC/args.current[0][0]*100))
+print("")
 
 
 
