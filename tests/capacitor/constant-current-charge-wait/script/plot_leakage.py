@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 import sys
 import numpy as np
 import csv
@@ -81,11 +81,19 @@ for i in range(0,len(args.data)):
     curr.append(c)
     stop.append(s)
 
-min_stop = min(stop)
+max_stop = max(stop)
 for i in range(0,len(time)):
-    plt.plot(time[i]-(stop[i]-min_stop),curr[i],label=args.data[i][0])
+    plt.plot(time[i]+(max_stop-stop[i]),curr[i]*1e6,label=args.data[i][0].split('/')[-1].split('.')[0])
 
+plt.ylabel("Capacitor charging losses + leakage (uA)")
+plt.xlabel("Time (s)")
+axes = plt.gca()
+axes.set_ylim([0,4])
+plt.axvline(x=max_stop-0.7,color='k',linewidth=0.5)
+plt.text(0,2.5,"Constant Current\nCharging")
+plt.text(27,2.5,"Zero Current")
 plt.legend()
+plt.title("Capacitor charge and stop losses")
 plt.show()
 
 
