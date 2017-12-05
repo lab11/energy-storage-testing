@@ -5,6 +5,7 @@ import csv
 from numpy import genfromtxt
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
+from scipy.optimize import curve_fit
 import argparse
 
 #So that we can use ASAP smoothing
@@ -64,6 +65,9 @@ def parse_test(filename, capacitance, charge_current):
 
     return time_interp_smooth,current,volt_filt,stop_time
 
+def model(x, a, b, k, c):
+    return a*(b**(-k*x)) + c
+
 def calc_metrics(leakage_current, time, stop_time):
     #we want to model this as a relatively constant current until the stop time
     #then a decaying exponential
@@ -71,18 +75,14 @@ def calc_metrics(leakage_current, time, stop_time):
     #(2) what is the exponent of the decaying exponential
     #(3) from 1 and 2, we can calculate the coulombs lost be integrated the decaying exponential
     stop_index = np.argmin(np.abs(time-stop_time))
-    print(stop_index)
     average = np.mean(leakage_current[:stop_index])
     
     dropoff = leakage_current[stop_index:]
     dropoff_time = time[stop_index:] - stop_time
 
-    k, alog = np.polyfit(dropoff_time, np.log(dropoff), 1, w=np.sqrt(dropoff))
-    a = np.exp(alog)
-    out = a*np.exp(k*dropoff_time)
-    plt.plot(dropoff_time,dropoff)
-    plt.plot(dropoff_time,out)
-    plt.show()
+    #do an integration to get the coulombs lost during the transition
+    area = np.trapz(dropoff, dropoff_time)
+    return average, area
 
 #get the arguments
 args = parser.parse_args()
@@ -91,22 +91,9 @@ if((len(args.data) != len(args.capacitance)) or (len(args.capacitance) != len(ar
     sys.exit(1)
 
 t,c,v,s = parse_test(args.data[0][0],args.capacitance[0][0],args.current[0][0]);
-calc_metrics(c,t,s)
-
-max_stop = max(stop)
-for i in range(0,len(time)):
-    plt.plot(time[i]+(max_stop-stop[i]),curr[i]*1e6,label=args.data[i][0].split('/')[-1].split('.')[0])
-
-plt.ylabel("Capacitor charging losses + leakage (uA)")
-plt.xlabel("Time (s)")
-axes = plt.gca()
-axes.set_ylim([0,4])
-plt.axvline(x=max_stop-0.7,color='k',linewidth=0.5)
-plt.text(0,2.5,"Constant Current\nCharging")
-plt.text(27,2.5,"Zero Current")
-plt.legend()
-plt.title("Capacitor charge and stop losses")
-plt.show()
+average, uC = calc_metrics(c,t,s)
+print(average)
+print(uC)
 
 
 
