@@ -53,7 +53,7 @@ function measureCapacitor(current, voltage, filename)
 
     print("Saving data...")
     savebuffer(smua.nvbuffer2,"csv",filename)
-    print("Done.
+    print("Done.")
 end
 
 measureCapacitor(0.00001, 2, "nichon_100uf_10ua_2v_1.csv")
