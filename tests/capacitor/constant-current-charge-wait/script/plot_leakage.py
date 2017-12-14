@@ -20,45 +20,45 @@ parser.add_argument('-i','--charge_current',nargs='*',dest='current',action='app
 def parse_test(filename, capacitance, charge_current):
     #get the voltage data into a np array
     voltage_data = genfromtxt(filename,delimiter=',',skip_header=6)
-    
+
     #copy columns of the data out
     volt = voltage_data[:,1]
     time = voltage_data[:,5]
-    
+
     #interpolate the signal - this will do better filtering and gradients
     time_interp = np.arange(0,time[-1],0.001)
     volt_interp = np.interp(time_interp,time,volt)
-    
-    
+
+
     #do a low pass filter of the data - dual sided butterworth filter will
     #not shift the data in time
     b, a = butter(5, 0.5, btype='low', analog=False)
     volt_filt = filtfilt(b, a, volt_interp)
-    
+
     #After filtering, find the point at which the source meter was turned off
     stop_point = np.argmax(volt_filt)
-    
+
     #take the derivative of the data with respect to the time column
     #I = C*(dv/dt)
     deriv = np.gradient(volt_filt, time_interp)
     current = deriv*capacitance
-    
+
     #subtract the charge current to get the inefficiencies and leakage
     current[:stop_point] = current[:stop_point] - charge_current
     stop_time = time_interp[stop_point]
-    
+
     #Smooth the current using ASAP - this seems to work better than
     #the butterworth filter
     current = ASAP.smooth(current,20000)
     time_interp_smooth = np.arange(0,time[-1],(time[-1]/np.size(current)))
-    
+
     #moving average filter to make it look smoother
     current = np.convolve(current,np.ones((500,))/500,mode='valid')
     time_interp_smooth = np.convolve(time_interp_smooth,np.ones((500,))/500,mode='valid')
 
     #re-interpolate the voltage data so they are on the same time scale
     volt_filt = np.interp(time_interp_smooth,time_interp,volt_filt)
-    
+
     #flip the leakage so that it's positive
     current = current*-1
 
@@ -90,8 +90,8 @@ plt.xlabel("Time (s)")
 axes = plt.gca()
 axes.set_ylim([0,4])
 plt.axvline(x=max_stop-0.7,color='k',linewidth=0.5)
-plt.text(0,2.5,"Constant Current\nCharging")
-plt.text(27,2.5,"Zero Current")
+plt.text(max_stop-28,2.5,"Constant Current\nCharging")
+plt.text(max_stop+8,2.5,"Zero Current")
 plt.legend()
 plt.title("Capacitor charge and stop losses")
 plt.show()
